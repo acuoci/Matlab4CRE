@@ -1,40 +1,3 @@
-%-------------------------------------------------------------------------%
-%        ___  ___      _   _       _       ___ _____ ______ _____         |
-%        |  \/  |     | | | |     | |     /   /  __ \| ___ \  ___|        |
-%        | .  . | __ _| |_| | __ _| |__  / /| | /  \/| |_/ / |__          |
-%        | |\/| |/ _` | __| |/ _` | '_ \/ /_| | |    |    /|  __|         |
-%        | |  | | (_| | |_| | (_| | |_) \___  | \__/\| |\ \| |___         |
-%        \_|  |_/\__,_|\__|_|\__,_|_.__/    |_/\____/\_| \_\____/         |
-%                                                                         |
-%                                                                         |
-%   Author: Alberto Cuoci <alberto.cuoci@polimi.it>                       |
-%   CRECK Modeling Group <http://creckmodeling.chem.polimi.it>            |
-%   Department of Chemistry, Materials and Chemical Engineering           |
-%   Politecnico di Milano                                                 |
-%   P.zza Leonardo da Vinci 32, 20133 Milano                              |
-%                                                                         |
-%-------------------------------------------------------------------------|
-%                                                                         |
-%   This file is part of Matlab4CRE framework.                            |
-%                                                                         |
-%	License                                                               |
-%                                                                         |
-%   Copyright(C) 2014 Alberto Cuoci                                       |
-%   Matlab4CRE is free software: you can redistribute it and/or modify    |
-%   it under the terms of the GNU General Public License as published by  |
-%   the Free Software Foundation, either version 3 of the License, or     |
-%   (at your option) any later version.                                   |
-%                                                                         |
-%   Matlab4CRE is distributed in the hope that it will be useful,         |
-%   but WITHOUT ANY WARRANTY; without even the implied warranty of        |
-%   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         |
-%   GNU General Public License for more details.                          |
-%                                                                         |
-%   You should have received a copy of the GNU General Public License     |
-%   along with Matlab4CRE. If not, see <http://www.gnu.org/licenses/>.    |
-%                                                                         |
-%-------------------------------------------------------------------------%
-
 clear all;
 
 % ------------------------------------------------------------------------%
@@ -53,13 +16,13 @@ global Te;
 % ------------------------------------------------------------------------%
 % 1. Load the kinetic mechanism 
 % ------------------------------------------------------------------------%
-kinetics = GasMechanism_Fogler_08_10;
+kinetics = GasMechanism_AceticAnhydride;
 
 % ------------------------------------------------------------------------%
 % 2. Define input data
 % ------------------------------------------------------------------------%
-T0 = 423.;                       % inlet temperature [K]
-P0 = 3.5168e5;                   % inlet pressure [Pa]
+T0 = 1000.;                     % inlet temperature [K]
+P0 = 101325;                    % inlet pressure [Pa]
 
 omega0 = zeros(1,kinetics.ns);  % inlet mass fractions [-]
 omega0(1) = 1.;
@@ -67,10 +30,10 @@ omega0(1) = 1.;
 D = 2.66e-2;                    % internal diameter [m]
 v0 = 10;                        % inlet velocity [m/s]
 x0 = 0;                         % initial axial coordinate [m]
-xF = 3;                         % final axial coordinate [m]
+xF = 10;                        % final axial coordinate [m]
 
-U = 26.60;                      % global heat exchange coefficient [W/m2/K]
-Te = 373;                       % external temperature [K]
+U  = 30;                        % global heat exchange coefficient [W/m2/K]
+Te = 1100;                      % external temperature [K]
 
 gx = 9.81;                      % gravity (alog the axis) [m/s2]
                                 % horizontal: gx = 0
@@ -155,5 +118,3 @@ plot (x, y(:,kinetics.ns+2)/1e5,'LineWidth',2);
 title('Pressure profile along the reactor');
 xlabel('axial length [m]'); 
 ylabel('Pressure [bar]');
-    
-

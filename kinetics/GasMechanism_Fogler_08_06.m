@@ -79,6 +79,20 @@ classdef GasMechanism_Fogler_08_06 < KineticMechanism
         
         end
         
+        % pressure [Pa]
+        function P = Pressure(obj, rho, T, omega)
+          
+            P = rho*obj.Rgas*T/obj.MolecularWeight(omega);
+        
+        end
+        
+        % beta coefficient [1/T]
+        function beta = Beta(obj, T,P,omega)
+          
+            beta = 1/T;
+        
+        end
+        
         % viscosity [kg/m/s]
         function mu = Viscosity(obj, T,P,omega)
           

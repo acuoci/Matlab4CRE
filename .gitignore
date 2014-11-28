@@ -9,6 +9,10 @@ tests/
 ###############
 source/OpenSMOKE_Definitions.h
 
+#Matlab files
+##################
+*.asv
+
 #Personal settings
 ##################
 *.o

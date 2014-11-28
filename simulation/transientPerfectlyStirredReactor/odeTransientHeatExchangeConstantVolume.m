@@ -35,22 +35,24 @@
 %                                                                         |
 %-------------------------------------------------------------------------%
 
-% Adiabatic tubular reactor
+% Isothermal transient perfectly stirred reactor
 % Assumptions:
-% 1. no pressure drop (low velocity and negligible viscous forces)
-% 2. heat exchange (through a global exchange coefficient)
-% 3. constant cross section area (i.e. constant internal diameter)
+% 1. constant volume (rigid vessel)
+% 2. constant temperature (isothermal conditions)
+% 3. single inlet stream
+% 4. no mass accumulation (i.e. min = mout)
 
-function dy = odeTubularHeatExchange(Tau,y)
+function dy = odeTransientHeatExchangeConstantVolume(t,y)
 
 global kinetics;
-global T0;
-global P0;
-global v0;
-global omega0;
-global U;
+global omega_in;
+global T_in;
+global V0;
+global mfr_in;
 global Te;
 global D;
+global U;
+global Le;
 
 % 1. Pre-allocate vectors
 dy = zeros(kinetics.ns+2,1);
@@ -62,35 +64,59 @@ for i=1:kinetics.ns
     omega(i) = y(i);
 end
 T = y(kinetics.ns+1);
-P = y(kinetics.ns+2);
+m = y(kinetics.ns+2);
 
-% 3. Density (equation of state) [kg/m3]
-rho = kinetics.Density(T,P,omega);
+% 3. Residence time [s]
+Tau = m/mfr_in;
 
-% 4. Velocity (continuity equation, algebraic) [m/s]
-rho0 = kinetics.Density(T0,P0,omega0);
-v   = rho0*v0/rho;
+% 4. Density (definition) [kg/m3]
+rho = m/V0;
 
-% 5. Reaction rates and formation rates [kmol/m3/s]
+% 5. Pressure [Pa]
+P = kinetics.Pressure(rho,T,omega);
+
+% 6. Reaction rates and formation rates [kmol/m3/s]
 [r,R] = kinetics.Calculate(T,P,omega);
 
 % ------------------------------------------------------------------------%
-% 7. Species equations (differential)  [1/m]
+% 7. Species equations (differential)  [1/s]
 % ------------------------------------------------------------------------%
 for i=1:kinetics.ns
-    domega(i) = R(i)*kinetics.MW(i)/(rho*v);
+    domega(i) = (omega_in(i)-omega(i))/Tau +R(i)*kinetics.MW(i)/rho;
 end
 
 % ------------------------------------------------------------------------%
 % 8. Energy equation (differential)  [K/m]
 % ------------------------------------------------------------------------%
-Cp = kinetics.SpecificHeat(omega); % [J/kg/K]
-Qr = kinetics.ReactionHeat(T,r,R); % [W/m3]
+Cp = kinetics.SpecificHeat(omega);  % [J/kg/K]
+Qr = kinetics.ReactionHeat(T,r,R);  % [W/m3]
+h_in = kinetics.Enthalpies(T_in);   % [J/kg]
+h_out= kinetics.Enthalpies(T);      % [J/kg]
 
-dT = Qr/(rho*Cp*v) + 4/D*U*(Te-T)/(rho*Cp*v);
+delta_h = 0;
+for i=1:kinetics.ns
+    delta_h = delta_h + omega_in(i)*(h_in(i)-h_out(i));
+end
+
+% Sum of formation rate of species [kmol/m3/s]
+sumR = 0.;
+for i=1:kinetics.ns
+   sumR = sumR+R(i);
+end
+
+% Beta coefficient and molecular weight
+Beta = kinetics.Beta(T,P,omega);
+W = kinetics.MolecularWeight(omega);
+
+dT =    (Beta*T/rho*P/rho)*W*sumR + ...
+        delta_h/Tau + Qr/rho + ...
+		6/D*U*(Te-T)/rho + ...
+		Le/(rho*V0);
+
+dT = dT / (Cp - Beta*P/rho);
 
 % ------------------------------------------------------------------------%
-% 9. Recover equations
+% 8. Recover equations
 % ------------------------------------------------------------------------%
 for i=1:kinetics.ns
     dy(i) = domega(i);
