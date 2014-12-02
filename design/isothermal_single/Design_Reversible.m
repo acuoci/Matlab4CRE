@@ -38,7 +38,7 @@
 % The residence times for a single, reversible reaction
 % in different reactors: batch (BR), plug flow (FPR), and CSTR:
 %
-% A <-> B
+% A <-> rB
 % r = k1*(CA-CB/KC)
 %
 % The residence times are calculated through numerical integration of
@@ -46,23 +46,6 @@
 
 close all;
 clear all;
-
-% ------------------------------------------------------------------------%
-% Conersion at equilibrium
-% ------------------------------------------------------------------------%
-eqX = @(KC,tetaB0) (KC-tetaB0)/(1+KC);
-
-% ------------------------------------------------------------------------%
-% Design equations for ideal reactors (functions to be integrated)
-% ------------------------------------------------------------------------%
-integral_BR = @(x, k1,KC,tetaB0,Xe,eps) KC/(KC-tetaB0)*Xe/k1 * ...
-                                        log(Xe./(Xe-x));
-
-integral_PFR = @(x, k1,KC,tetaB0,Xe,eps) KC/(KC-tetaB0)*Xe/k1 * ...
-                                        (log(Xe./(Xe-x))*(1+eps*Xe)-eps*x);
-
-integral_CSTR = @(x, k1,KC,tetaB0,Xe,eps) KC/(KC-tetaB0)*Xe/k1 * ...
-                                          (x*(1+eps*Xe)./(Xe-x));
 
 % ------------------------------------------------------------------------%
 % Kinetic constant [kmol, m3, s] (the units depend on the reaction order n)
@@ -89,64 +72,93 @@ tetaB0 = input(prompt);
 % ------------------------------------------------------------------------%
 % Conversion at equilibrium
 % ------------------------------------------------------------------------%
-Xe = eqX(KC,tetaB0)
+eqX = @(KC,tetaB0,r) (KC-tetaB0)/(r+KC);
+
+% ------------------------------------------------------------------------%
+% Coefficient
+% ------------------------------------------------------------------------%
+Gamma = @(k1,KC,r) 1/k1*KC/(r+KC);
+
+% ------------------------------------------------------------------------%
+% Design equations for ideal reactors (functions to be integrated)
+% ------------------------------------------------------------------------%
+integrand_BR = @(x,  gamma,Xe,eps)  gamma* (Xe./(Xe-x));
+integrand_PFR = @(x, gamma,Xe,eps)  gamma* (1+eps*x)./(Xe-x);
+integral_CSTR = @(x, gamma,Xe,eps)  gamma* (1+eps*x)*x./(Xe-x);
+
+% ------------------------------------------------------------------------%
+% Conversion at equilibrium 
+% ------------------------------------------------------------------------%
+
 
 % ------------------------------------------------------------------------%
 % Create plots
 % ------------------------------------------------------------------------%
 figure;                   % create new figure
-X = linspace(0,Xe-1e-2);  % create the x axis for plotting profiles
+xlimInf = 0.9;
 
 % ------------------------------------------------------------------------%
-% 1. Case 1: eps = 0 (no changes in number of moles)
+% 1. Case 1: r=1 (no changes in number of moles)
 % ------------------------------------------------------------------------%
-eps = 0;
+r = 1;
+gamma = Gamma(k1,KC,r);
+Xe = eqX(KC,tetaB0,r);
+eps = (r-1)/(1+tetaB0);
+X = linspace(0,Xe-1e-2);  % create the x axis for plotting profiles
 for i=1:100
-TauBR(i) = integral(@(x)integral_BR(x,k1,KC,tetaB0,Xe,eps),0,X(i));
-TauPFR(i) = integral(@(x)integral_PFR(x,k1,KC,tetaB0,Xe,eps),0,X(i));
-TauCSTR(i) = integral_CSTR(X(i),k1,KC,tetaB0,Xe,eps);
+TauBR(i) = integral(@(x)integrand_BR(x,gamma,Xe,eps),0,X(i));
+TauPFR(i) = integral(@(x)integrand_PFR(x,gamma,Xe,eps),0,X(i));
+TauCSTR(i) = integral_CSTR(X(i),gamma,Xe,eps);
 end
 
 subplot(2,2,1);
 loglog(1-X,TauBR, 1-X,TauPFR,'.', 1-X,TauCSTR);
-title('eps = 0');
-xlim([0.01 1]);
+title('r = 1');
+xlim([1-xlimInf, 1]);
 xlabel('1-X');
 ylabel('residence time [s]');
 legend('Batch','Plug Flow', 'CSTR');
 
 % ------------------------------------------------------------------------%
-% 2. Case 2: eps = 1
+% 2. Case 2: r = 2 ( A<->2B)
 % ------------------------------------------------------------------------%
-eps = 1;
+r = 2;
+gamma = Gamma(k1,KC,r);
+Xe = eqX(KC,tetaB0,r);
+eps = (r-1)/(1+tetaB0);
+X = linspace(0,Xe-1e-2);  % create the x axis for plotting profiles
 for i=1:100
-TauBR(i) = integral(@(x)integral_BR(x,k1,KC,tetaB0,Xe,eps),0,X(i));
-TauPFR(i) = integral(@(x)integral_PFR(x,k1,KC,tetaB0,Xe,eps),0,X(i));
-TauCSTR(i) = integral_CSTR(X(i),k1,KC,tetaB0,Xe,eps);
+TauBR(i) = integral(@(x)integrand_BR(x,gamma,Xe,eps),0,X(i));
+TauPFR(i) = integral(@(x)integrand_PFR(x,gamma,Xe,eps),0,X(i));
+TauCSTR(i) = integral_CSTR(X(i),gamma,Xe,eps);
 end
 
 subplot(2,2,2);
 loglog(1-X,TauBR, 1-X,TauPFR,'.', 1-X,TauCSTR);
-title('eps = 1');
-xlim([0.01 1]);
+title('r = 2');
+xlim([1-xlimInf, 1]);
 xlabel('1-X');
 ylabel('residence time [s]');
 legend('Batch','Plug Flow', 'CSTR');
 
 % ------------------------------------------------------------------------%
-% 3. Case 3: eps = -0.5
+% 3. Case 3: r = 0.5
 % ------------------------------------------------------------------------%
-eps = -0.5;
+r = 0.5;
+gamma = Gamma(k1,KC,r);
+Xe = eqX(KC,tetaB0,r);
+eps = (r-1)/(1+tetaB0);
+X = linspace(0,Xe-1e-2);  % create the x axis for plotting profiles
 for i=1:100
-TauBR(i) = integral(@(x)integral_BR(x,k1,KC,tetaB0,Xe,eps),0,X(i));
-TauPFR(i) = integral(@(x)integral_PFR(x,k1,KC,tetaB0,Xe,eps),0,X(i));
-TauCSTR(i) = integral_CSTR(X(i),k1,KC,tetaB0,Xe,eps);
+TauBR(i) = integral(@(x)integrand_BR(x,gamma,Xe,eps),0,X(i));
+TauPFR(i) = integral(@(x)integrand_PFR(x,gamma,Xe,eps),0,X(i));
+TauCSTR(i) = integral_CSTR(X(i),gamma,Xe,eps);
 end
 
 subplot(2,2,3);
 loglog(1-X,TauBR, 1-X,TauPFR,'.', 1-X,TauCSTR);
-title('eps = -0.5');
-xlim([0.01 1]);
+title('r = 0.5');
+xlim([1-xlimInf, 1]);
 xlabel('1-X');
 ylabel('residence time [s]');
 legend('Batch','Plug Flow', 'CSTR');
@@ -156,58 +168,71 @@ legend('Batch','Plug Flow', 'CSTR');
 % ------------------------------------------------------------------------%
 X = linspace(1e-2,0.99);
 
-eps = 0;
+r = 1;
+gamma = Gamma(k1,KC,r);
+Xe = eqX(KC,tetaB0,r);
+eps = (r-1)/(1+tetaB0);
 for i=1:100
-TauPFR_0(i) = integral(@(x)integral_PFR(x,k1,KC,tetaB0,Xe,eps),0,X(i));
-TauCSTR_0(i) = integral_CSTR(X(i),k1,KC,tetaB0,Xe,eps);
+    TauPFR_0(i) = integral(@(x)integrand_PFR(x,gamma,Xe,eps),0,X(i));
+    TauCSTR_0(i) = integral_CSTR(X(i),gamma,Xe,eps);
 end
 
-eps = 1;
+r = 2;
+gamma = Gamma(k1,KC,r);
+Xe = eqX(KC,tetaB0,r);
+eps = (r-1)/(1+tetaB0);
 for i=1:100
-TauPFR_1(i) = integral(@(x)integral_PFR(x,k1,KC,tetaB0,Xe,eps),0,X(i));
-TauCSTR_1(i) = integral_CSTR(X(i),k1,KC,tetaB0,Xe,eps);
+	TauPFR_1(i) = integral(@(x)integrand_PFR(x,gamma,Xe,eps),0,X(i));
+    TauCSTR_1(i) = integral_CSTR(X(i),gamma,Xe,eps);
 end
 
-eps = -0.5;
+r = 0.5;
+gamma = Gamma(k1,KC,r);
+Xe = eqX(KC,tetaB0,r);
+eps = (r-1)/(1+tetaB0);
 for i=1:100
-TauPFR_m05(i) = integral(@(x)integral_PFR(x,k1,KC,tetaB0,Xe,eps),0,X(i));
-TauCSTR_m05(i) = integral_CSTR(X(i),k1,KC,tetaB0,Xe,eps);
+    TauPFR_m05(i) = integral(@(x)integrand_PFR(x,gamma,Xe,eps),0,X(i));
+    TauCSTR_m05(i) = integral_CSTR(X(i),gamma,Xe,eps);
 end
 
 subplot(2,2,4);
 loglog(1-X,TauCSTR_0./TauPFR_0,1-X,TauCSTR_1./TauPFR_1,1-X,TauCSTR_m05./TauPFR_m05);
-title('TauCSTR/TauPFR');
-xlim([0.01 1]);
-ylim([1 100]);
+title('CSTR vs PFR');
+xlim([1-xlimInf, 1]);
+ylim([1 10]);
 xlabel('1-X');
-ylabel('residence time [s]');
-legend('eps=0','eps=1','eps=-0.5');
+ylabel('TauCSTR/TauPFR');
+legend('r=1','r=2','r=0.5');
 
 % ------------------------------------------------------------------------%
 % 5. Levenspiel's plots
 % ------------------------------------------------------------------------%
 figure;
-eps = 0;
+hold all;
+
+r = 1;
+eps = (r-1)/(1+tetaB0);
 
 KC=1;
-Xe = eqX(KC,tetaB0);
+Xe = eqX(KC,tetaB0,r);
 X = linspace(1e-2,Xe-1e-3);
 RA = -k1*CA0./(1+eps*X) * (1+KC)/KC .* (Xe-X);
 loglog(X,abs(-1./RA),'r');
-hold on;
+
 KC=10;
-Xe = eqX(KC,tetaB0);
+Xe = eqX(KC,tetaB0,r);
 X = linspace(1e-2,Xe-1e-3);
 RA = -k1*CA0./(1+eps*X) * (1+KC)/KC .* (Xe-X);
 loglog(X,-1./RA,'b');
+
 KC=0.1;
-Xe = eqX(KC,tetaB0);
+Xe = eqX(KC,tetaB0,r);
 X = linspace(1e-2,Xe-1e-3);
 RA = -k1*CA0./(1+eps*X) * (1+KC)/KC .* (Xe-X);
 loglog(X,-1./RA,'g');
 
 title('Levenspiel''s Plot');
-xlim([0.01 1]);
+xlim([1e-2, 1]);
 ylim([1 100]);
 xlabel('X');
 ylabel('-1/R_A');

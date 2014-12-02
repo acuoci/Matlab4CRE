@@ -175,7 +175,7 @@ loglog(X,-1./RA,'r', 'LineWidth',2);
 n=2;
 RA = -k1*CA0^n*(1-X).^n./(1+eps*X).^n;
 loglog(X,-1./RA,'b','LineWidth',2);
-n=0.5
+n=0.5;
 RA = -k1*CA0^n*(1-X).^n./(1+eps*X).^n;
 loglog(X,-1./RA,'g','LineWidth',2);
 
