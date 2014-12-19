@@ -159,7 +159,7 @@ title('CSTR vs PFR');
 xlim([0.01 1]);
 ylim([1 100]);
 xlabel('1-X');
-ylabel('residence time [s]');
+ylabel('TauCSTR/TauPFR');
 legend('eps=0','eps=1','eps=-0.5');
 
 % ------------------------------------------------------------------------%
