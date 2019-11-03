@@ -34,30 +34,15 @@
 %   along with Matlab4CRE. If not, see <http://www.gnu.org/licenses/>.    |
 %                                                                         |
 %-------------------------------------------------------------------------%
+close all; clear variables;
 
-clear all;
 
-% ------------------------------------------------------------------------%
-% Global variables 
-% ------------------------------------------------------------------------%
-global kinetics;            % kinetic mechanism
-global T0;                  % inlet temperature [K]
-global P0;                  % inlet pressure [Pa]
-global omega0;              % inlet mass fractions [-]
-global v0;                  % inlet velocity [m/s]
-global D;                   % internal diameter
-global gx;                  % gravity [m/s2]
-global U;
-global Te;
+%% Section 1: problem definition
 
-% ------------------------------------------------------------------------%
-% 1. Load the kinetic mechanism 
-% ------------------------------------------------------------------------%
+% 1.1 Load the kinetic mechanism 
 kinetics = GasMechanism_AceticAnhydride;
 
-% ------------------------------------------------------------------------%
-% 2. Define input data
-% ------------------------------------------------------------------------%
+% 1.2 Define input data
 T0 = 1000.;                     % inlet temperature [K]
 P0 = 101325;                    % inlet pressure [Pa]
 
@@ -73,14 +58,11 @@ U  = 30;                        % global heat exchange coefficient [W/m2/K]
 Te = 1100;                      % external temperature [K]
 
 gx = 9.81;                      % gravity (alog the axis) [m/s2]
-                                % horizontal: gx = 0
-                                % vertical, going up: gx = -9.81 m/s2
-                                % vertical, going down: gx =  9.81 m/s2
+                                % horizontal: gx = 0, vertical: gx=+/-9.81
+      
                                 
-                                
-% ------------------------------------------------------------------------%
-% 3. Simulation
-% ------------------------------------------------------------------------%
+%% Section 2: simulation
+
 clear screen;
 disp( sprintf('1. Isothermal, without pressure drop'));
 disp( sprintf('2. Isothermal, with pressure drop'));
@@ -96,7 +78,8 @@ if (simulation == 1)
     y0 = [omega0, T0, P0];
     
     % ODE Solver
-    [x,y] = ode15s(@odeTubularIsothermal,[x0 xF], y0);
+    [x,y] = ode15s(@odeTubularIsothermal,[x0 xF], y0, [], ...
+                    kinetics,T0,P0,omega0,v0);
     
 elseif (simulation == 2)
 
@@ -104,7 +87,8 @@ elseif (simulation == 2)
     y0 = [omega0, T0, P0];
     
     % ODE Solver
-    [x,y] = ode15s(@odeTubularIsothermalWithPressureDrop,[x0 xF], y0);
+    [x,y] = ode15s(@odeTubularIsothermalWithPressureDrop,[x0 xF], y0, [], ...
+                    kinetics,T0,P0,omega0,v0,D,gx);
     
 elseif (simulation == 3)
     
@@ -112,13 +96,13 @@ elseif (simulation == 3)
     y0 = [omega0, T0, P0];
     
     % ODE Solver
-    [x,y] = ode15s(@odeTubularHeatExchange,[x0 xF], y0);
+    [x,y] = ode15s(@odeTubularHeatExchange,[x0 xF], y0, [], ...
+                    kinetics,T0,P0,v0,omega0,U,Te,D);
     
 end
 
-% ------------------------------------------------------------------------%
-% 3. Post processing
-% ------------------------------------------------------------------------%
+
+%% Section 3: post-processing
 
 figure; % create new figure
 hold all;
@@ -130,8 +114,7 @@ for i=1:kinetics.ns
     plot (x, y(:,i),'LineWidth',2);
 end
 title('Mass fractions of species along the reactor');
-xlabel('axial length [m]'); 
-ylabel('mass fractions [-]'); 
+xlabel('axial length [m]'); ylabel('mass fractions [-]'); 
 legend(kinetics.species);
 axis([-inf,inf,0,inf]);
 
@@ -139,19 +122,16 @@ axis([-inf,inf,0,inf]);
 subplot(2,2,2);
 plot (x, 1-y(:,1),'LineWidth',2);
 title('Conversion profile along the reactor');
-xlabel('axial length [m]'); 
-ylabel('Conversion');
+xlabel('axial length [m]');     ylabel('Conversion');
 
 % Temperature profile
 subplot(2,2,3);
 plot (x, y(:,kinetics.ns+1),'LineWidth',2);
 title('Temperature profile along the reactor');
-xlabel('axial length [m]'); 
-ylabel('Temperature [K]');
+xlabel('axial length [m]');     ylabel('Temperature [K]');
 
 % Pressure profile
 subplot(2,2,4);
 plot (x, y(:,kinetics.ns+2)/1e5,'LineWidth',2);
 title('Pressure profile along the reactor');
-xlabel('axial length [m]'); 
-ylabel('Pressure [bar]');
+xlabel('axial length [m]');     ylabel('Pressure [bar]');
