@@ -17,9 +17,9 @@
 %                                                                         |
 %   This file is part of Matlab4CRE framework.                            |
 %                                                                         |
-%	License                                                               |
+%   License                                                               |
 %                                                                         |
-%   Copyright(C) 2014 Alberto Cuoci                                       |
+%   Copyright(C) 2019 Alberto Cuoci                                       |
 %   Matlab4CRE is free software: you can redistribute it and/or modify    |
 %   it under the terms of the GNU General Public License as published by  |
 %   the Free Software Foundation, either version 3 of the License, or     |
@@ -59,6 +59,9 @@ n = a(2);
 SSres = (Y-X*a)'*(Y-X*a);
 SStot = (Y-mean(Y))'*(Y-mean(Y));
 R2 = 1 - SSres/SStot;
+
+% Print results
+fprintf('k=%f n=%f R2=%f \n', k, n, R2);
 
 % Plot
 plot( lnCA0, Y', '.','markersize',20);
