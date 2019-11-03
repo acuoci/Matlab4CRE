@@ -17,9 +17,9 @@
 %                                                                         |
 %   This file is part of Matlab4CRE framework.                            |
 %                                                                         |
-%	License                                                               |
+%   License                                                               |
 %                                                                         |
-%   Copyright(C) 2014 Alberto Cuoci                                       |
+%   Copyright(C) 2019 Alberto Cuoci                                       |
 %   Matlab4CRE is free software: you can redistribute it and/or modify    |
 %   it under the terms of the GNU General Public License as published by  |
 %   the Free Software Foundation, either version 3 of the License, or     |
@@ -34,37 +34,30 @@
 %   along with Matlab4CRE. If not, see <http://www.gnu.org/licenses/>.    |
 %                                                                         |
 %-------------------------------------------------------------------------%
-%
-% Reactions in series in isothermal PFR and CSTR: comparison
-%
-%              A -> B -> C
-%
+%                                                                         %
+% Reactions in series in isothermal PFR and CSTR: comparison              %
+%                                                                         %
+% A -> D -> U                                                             %
+%                                                                         %
 %-------------------------------------------------------------------------%
-close all;
-clear all;
+close all; clear variables;
 
-% ------------------------------------------------------------------------%
-% Initial concentration
-% ------------------------------------------------------------------------%
-CA0 = 1;    % [uc]
 
-% ------------------------------------------------------------------------%
-% Kinetic parameters
-% ------------------------------------------------------------------------%
-k1  = 2;    % [1/ut]
-k2  = 1;    % [1/ut]
+%% Input data
+CA0 = 1;    % initial concentration [uc]
+k1  = 2;    % kinetic constant [1/ut]
+k2  = 1;    % kinetic constant [1/ut]
 
-% ------------------------------------------------------------------------%
-% Optimal values (analytical solutions)
-% ------------------------------------------------------------------------%
-CSTR_tOpt = 1/sqrt(k1*k2)
-PFR_tOpt = log(k2/k1)/(k2-k1)
 
-% ------------------------------------------------------------------------%
-% Profiles (analytical solutions)
-% ------------------------------------------------------------------------%
-np=1000;
-t = linspace(0,100*max(CSTR_tOpt, PFR_tOpt),np);
+%% Optimal values (analytical solutions)
+
+CSTR_tOpt = 1/sqrt(k1*k2);
+PFR_tOpt = log(k2/k1)/(k2-k1);
+
+
+%% Profiles (analytical solutions)
+
+t = linspace(0,100*max(CSTR_tOpt, PFR_tOpt),1000);
 
 % CSTR
 CSTR_CA = CA0./(1+k1*t);
@@ -101,19 +94,16 @@ CSTR_Ytilde = CSTR_CD./(CA0-CSTR_CA);
 PFR_Y = PFR_RD./(-PFR_RA);
 PFR_Ytilde = PFR_CD./(CA0-PFR_CA);
 
-% ------------------------------------------------------------------------%
-% Plotting solution
-% ------------------------------------------------------------------------%
+
+%% Plotting solution
 
 % Concentrations vs time
 subplot(2,2,1);
 hold all;
 plot(t,CSTR_CD,'LineWidth',2);
 plot(t,PFR_CD,'LineWidth',2);
-title('Concentration of D');
-xlabel('time [ut]');
-ylabel('concentrations [uc]');
-legend('CSTR', 'PFR');
+title('Concentration of D'); legend('CSTR', 'PFR');
+xlabel('time [ut]'); ylabel('concentrations [uc]');
 xlim([0 3*max(CSTR_tOpt, PFR_tOpt)]);
 
 % Concentrations vs Conversion
@@ -121,10 +111,8 @@ subplot(2,2,2);
 hold all;
 plot(CSTR_XA,CSTR_CD,'LineWidth',2);
 plot(PFR_XA,PFR_CD,'LineWidth',2);
-title('Concentration of D');
-xlabel('X_A');
-ylabel('concentrations [uc]');
-legend('CSTR', 'PFR');
+title('Concentration of D');    legend('CSTR', 'PFR');
+xlabel('X_A'); ylabel('concentrations [uc]');
 xlim([0 1]);
 
 % Yield vs Conversion
@@ -132,19 +120,15 @@ subplot(2,2,3);
 hold all;
 plot(CSTR_XA,CSTR_Ytilde,'LineWidth',2);
 plot(PFR_XA,PFR_Ytilde,'LineWidth',2);
-title('Overall Yield');
-xlabel('X_A');
-ylabel('yield');
-legend('CSTR', 'PFR');
+title('Overall Yield'); legend('CSTR', 'PFR');
+xlabel('X_A'); ylabel('yield');
 xlim([0 1]);
 
 % Selectivity vs Conversion
 subplot(2,2,4);
 hold all;
-plot(CSTR_XA(2:np),CSTR_Stilde(2:np),'LineWidth',2);
-plot(PFR_XA(2:np),PFR_Stilde(2:np),'LineWidth',2);
-title('Overall selectivity');
-xlabel('X_A');
-ylabel('selectivity');
-legend('CSTR', 'PFR');
+plot(CSTR_XA(2:end),CSTR_Stilde(2:end),'LineWidth',2);
+plot(PFR_XA(2:end),PFR_Stilde(2:end),'LineWidth',2);
+title('Overall selectivity');   legend('CSTR', 'PFR');
+xlabel('X_A'); ylabel('selectivity');
 xlim([0 1]);

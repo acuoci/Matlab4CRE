@@ -17,9 +17,9 @@
 %                                                                         |
 %   This file is part of Matlab4CRE framework.                            |
 %                                                                         |
-%	License                                                               |
+%   License                                                               |
 %                                                                         |
-%   Copyright(C) 2014 Alberto Cuoci                                       |
+%   Copyright(C) 2019 Alberto Cuoci                                       |
 %   Matlab4CRE is free software: you can redistribute it and/or modify    |
 %   it under the terms of the GNU General Public License as published by  |
 %   the Free Software Foundation, either version 3 of the License, or     |
@@ -34,29 +34,22 @@
 %   along with Matlab4CRE. If not, see <http://www.gnu.org/licenses/>.    |
 %                                                                         |
 %-------------------------------------------------------------------------%
-%
-% Reactions in series in isothermal CSTR
-%
-%              A -> B -> C
-%
+%                                                                         %
+% Reactions in series in isothermal CSTR                                  %
+%                                                                         %
+% A -> D -> U                                                             %
+%                                                                         %
 %-------------------------------------------------------------------------%
-close all;
-clear all;
+close all; clear variables;
 
-% ------------------------------------------------------------------------%
-% Initial concentration
-% ------------------------------------------------------------------------%
-CA0 = 1;    % [uc]
 
-% ------------------------------------------------------------------------%
-% Kinetic parameters
-% ------------------------------------------------------------------------%
-k1  = 2;    % [1/ut]
-k2  = 1;    % [1/ut]
+%% Input data
+CA0 = 1;    % initial concentration [uc]
+k1  = 2;    % kinetic constant [1/ut]
+k2  = 1;    % kinetic constant [1/ut]
 
-% ------------------------------------------------------------------------%
-% Optimal values (analytical solutions)
-% ------------------------------------------------------------------------%
+
+%% Optimal values (analytical solutions)
 
 % Optimal residence time
 tOpt = 1/sqrt(k1*k2);
@@ -82,11 +75,10 @@ StildeOpt = CDOpt/CUOpt;
 YOpt = RDOpt/(-RAOpt);
 YtildeOpt = CDOpt/(CA0-CAOpt);
 
-% ------------------------------------------------------------------------%
-% Profiles (analytical solutions)
-% ------------------------------------------------------------------------%
-np=200;
-t = linspace(0,5*tOpt,np);
+
+%% Profiles (analytical solutions)
+
+t = linspace(0,5*tOpt,200);
 
 CA = CA0./(1+k1*t);
 CD = CA0*k1*t./(1+k1*t)./(1+k2*t);
@@ -105,9 +97,7 @@ Y = RD./(-RA);
 Ytilde = CD./(CA0-CA);
 
 
-% ------------------------------------------------------------------------%
-% Plotting solution
-% ------------------------------------------------------------------------%
+%% Plotting solution
 
 % Concentrations vs time
 subplot(2,2,1);
@@ -115,10 +105,8 @@ hold all;
 plot(t,CA,'LineWidth',2);
 plot(t,CD,'LineWidth',2); 
 plot(t,CU,'LineWidth',2);
-title('Concentrations');
-xlabel('time [ut]');
-ylabel('concentrations [uc]');
-legend('A', 'D', 'U');
+title('Concentrations');    legend('A', 'D', 'U');
+xlabel('time [ut]'); ylabel('concentrations [uc]');
 xlim([0 3*tOpt]);
 
 % Concentrations vs Conversion
@@ -127,25 +115,20 @@ hold all;
 plot(XA,CA,'LineWidth',2);
 plot(XA,CD,'LineWidth',2);
 plot(XA,CU,'LineWidth',2);
-title('Concentrations');
-xlabel('X_A');
-ylabel('concentrations [uc]');
-legend('A', 'D', 'U');
+title('Concentrations'); legend('A', 'D', 'U');
+xlabel('X_A'); ylabel('concentrations [uc]');
 
 % Fractional yield vs Conversion
 subplot(2,2,3);
 hold all;
 plot(XA,Ytilde,'LineWidth',2);
 title('Yield');
-xlabel('X_A');
-ylabel('yield');
+xlabel('X_A'); ylabel('yield');
 
 % Selectivity vs Conversion
 subplot(2,2,4);
 hold all;
-plot(XA(2:np),S(2:np), 'LineWidth',2);
-plot(XA(2:np), Stilde(2:np), 'LineWidth',2);
-title('Selectivity');
-xlabel('X_A');
-ylabel('selectivity');
-legend('instantaneous', 'overall');
+plot(XA(2:end),S(2:end), 'LineWidth',2);
+plot(XA(2:end), Stilde(2:end), 'LineWidth',2);
+title('Selectivity'); legend('instantaneous', 'overall');
+xlabel('X_A'); ylabel('selectivity');

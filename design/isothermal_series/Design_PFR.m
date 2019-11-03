@@ -37,7 +37,7 @@
 %                                                                         %
 % Reactions in series in isothermal PFR                                   %
 %                                                                         %
-% A -> B -> C                                                             %
+% A -> D -> U                                                             %
 %                                                                         %
 %-------------------------------------------------------------------------%
 close all; clear variables;
