@@ -17,9 +17,9 @@
 %                                                                         |
 %   This file is part of Matlab4CRE framework.                            |
 %                                                                         |
-%	License                                                               |
+%   License                                                               |
 %                                                                         |
-%   Copyright(C) 2014 Alberto Cuoci                                       |
+%   Copyright(C) 2019 Alberto Cuoci                                       |
 %   Matlab4CRE is free software: you can redistribute it and/or modify    |
 %   it under the terms of the GNU General Public License as published by  |
 %   the Free Software Foundation, either version 3 of the License, or     |
@@ -34,15 +34,18 @@
 %   along with Matlab4CRE. If not, see <http://www.gnu.org/licenses/>.    |
 %                                                                         |
 %-------------------------------------------------------------------------%
+close all; clear variables;
 
-% Experimental data
-PCO  = [ 1 1.8 4.08 1 1 1  2 2 2     1 1.8 4.08  3   3   3   1 1.8 4.08 ]';
-PH2  = [ 1 1 1 0.1 0.5 4.0 0.1 0.5 4.0 2 2   2     0.1 0.5 4.0 3 3   3    ]';
-rCH4 = [ 0.0072; 0.0129; 0.0292;0.0049;0.0073; 0.0053;0.0098; 0.0146;0.0106;0.0064;0.0115; 0.0260;0.0147;0.0219;0.0159; 0.0058; 0.0104; 0.0235;];
 
-% ---------------------------------------------------------------------
-% Linear regression model (for CO only)
-% ---------------------------------------------------------------------
+%% Input data
+PCO  = [ 1 1.8 4.08 1   1   1   2   2   2   1 1.8 4.08  3   3   3   1 1.8 4.08  ]';
+PH2  = [ 1 1   1    0.1 0.5 4.0 0.1 0.5 4.0 2 2   2     0.1 0.5 4.0 3 3   3     ]';
+rCH4 = [ 0.0072; 0.0129; 0.0292; 0.0049; 0.0073; 0.0053; 0.0098; 0.0146; 0.0106; ... 
+         0.0064; 0.0115; 0.0260; 0.0147; 0.0219; 0.0159; 0.0058; 0.0104; 0.0235; ];
+
+     
+%% Linear regression model (for CO only)
+
 % Y = a0 + a1*X
 % Y = ln(r), a0 = ln(k), a1 = n, X = [1, ln(PCO0)]
 Y = log(rCH4);
@@ -55,16 +58,18 @@ a = (X'*X)\(X'*Y);
 
 % Recover original parameters
 k = exp(a(1));
-nCO = a(2)
+nCO = a(2);
 
 % Statistics (linear model)
 SSres = (Y-X*a)'*(Y-X*a);
 SStot = (Y-mean(Y))'*(Y-mean(Y));
 R2 = 1 - SSres/SStot;
 
-% ---------------------------------------------------------------------
-% Non-linear regression model (for H2 only)
-% ---------------------------------------------------------------------
+% Print results
+fprintf('LR: k=%f nCO=%f R2=%f \n', k, nCO, R2);
+
+
+%% Non-linear regression model (for H2 only)
 
 % First guess
 firstGuess = [1 1 1 1];
@@ -73,7 +78,25 @@ firstGuess = [1 1 1 1];
 nlm = fitnlm([PCO PH2],log(rCH4),@nonLinearModel,firstGuess);
 
 % Results
-b1 = exp( nlm.Coefficients.Estimate(1) )
-nlow = nlm.Coefficients.Estimate(2)
-nhigh = nlm.Coefficients.Estimate(3)
-b2 = nlm.Coefficients.Estimate(4)
+b1 = exp( nlm.Coefficients.Estimate(1) );
+nlow = nlm.Coefficients.Estimate(2);
+nhigh = nlm.Coefficients.Estimate(3);
+b2 = nlm.Coefficients.Estimate(4);
+fprintf('NLR: b1=%f nlow=%f nhigh=%f b2=%f \n', b1, nlow, nhigh, b2);
+
+
+%% Non-linear function (for non-linear regression case)
+function y = nonLinearModel(a,x)
+
+    lnb1   = a(1);
+    nCO    = 1;
+    nlow   = a(2);
+    nhigh  = a(3);
+    b2     = a(4);
+
+    PH2 = x(:,2);
+    PCO = x(:,1);
+
+    y = lnb1 + nCO*log(PCO) + nlow*log(PH2) - log(1+b2*PH2.^nhigh);
+
+end
