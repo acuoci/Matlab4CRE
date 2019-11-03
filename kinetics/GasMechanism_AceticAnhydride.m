@@ -17,9 +17,9 @@
 %                                                                         |
 %   This file is part of Matlab4CRE framework.                            |
 %                                                                         |
-%	License                                                               |
+%   License                                                               |
 %                                                                         |
-%   Copyright(C) 2014 Alberto Cuoci                                       |
+%   Copyright(C) 2019 Alberto Cuoci                                       |
 %   Matlab4CRE is free software: you can redistribute it and/or modify    |
 %   it under the terms of the GNU General Public License as published by  |
 %   the Free Software Foundation, either version 3 of the License, or     |
@@ -35,9 +35,9 @@
 %                                                                         |
 %-------------------------------------------------------------------------%
 
-%Kinetic mechanism defining the following reactions
+% Kinetic mechanism defining the following reactions
 
-% CH3COCH3 => CH2CO + CH4 (r1 = k1*CA)
+% CH3COCH3 => CH2CO + CH4   (r1 = k1*CA)
 
 classdef GasMechanism_AceticAnhydride < KineticMechanism
 

@@ -19,7 +19,7 @@
 %                                                                         |
 %	License                                                               |
 %                                                                         |
-%   Copyright(C) 2014 Alberto Cuoci                                       |
+%   Copyright(C) 2019 Alberto Cuoci                                       |
 %   Matlab4CRE is free software: you can redistribute it and/or modify    |
 %   it under the terms of the GNU General Public License as published by  |
 %   the Free Software Foundation, either version 3 of the License, or     |
@@ -35,10 +35,10 @@
 %                                                                         |
 %-------------------------------------------------------------------------%
 
-%Kinetic mechanism defining the following reactions
+% Kinetic mechanism defining the following reactions
 
-% A => B    (r1 = k1*CA)
-% A => 0.5C (r2 = k2*CA*CA)
+% A => B        (r1 = k1*CA)
+% A => 0.5C     (r2 = k2*CA*CA)
 
 classdef GasMechanism_Fogler_08_10 < KineticMechanism
 
