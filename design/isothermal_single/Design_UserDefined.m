@@ -17,9 +17,9 @@
 %                                                                         |
 %   This file is part of Matlab4CRE framework.                            |
 %                                                                         |
-%	License                                                               |
+%   License                                                               |
 %                                                                         |
-%   Copyright(C) 2014 Alberto Cuoci                                       |
+%   Copyright(C) 2019 Alberto Cuoci                                       |
 %   Matlab4CRE is free software: you can redistribute it and/or modify    |
 %   it under the terms of the GNU General Public License as published by  |
 %   the Free Software Foundation, either version 3 of the License, or     |
@@ -34,32 +34,27 @@
 %   along with Matlab4CRE. If not, see <http://www.gnu.org/licenses/>.    |
 %                                                                         |
 %-------------------------------------------------------------------------%
+%                                                                         %
+% The residence times for a single, user-defined reaction                 %
+% in different reactors: batch (BR), plug flow (FPR), and CSTR:           %
+%                                                                         %
+% The residence times are calculated through numerical integration of     %
+% design equations. The reaction rates as a function of conversion are    %
+% specified by the user through the RA(X) function                        %
+%                                                                         %
+%-------------------------------------------------------------------------%
+close all; clear variables;
 
-% The residence times for a single, user-defined reaction
-% in different reactors: batch (BR), plug flow (FPR), and CSTR:
-%
-% The residence times are calculated through numerical integration of
-% design equations. The reaction rates as a function of the conversion are
-% specified by the user through the RA(X) function
 
-close all;
-clear all;
-
-% ------------------------------------------------------------------------%
-% Initial concentration [kmol/m3/s]
-% ------------------------------------------------------------------------%
-CA0 = 1;
-
-% ------------------------------------------------------------------------%
-% User defined reaction rate function
-% The reaction rates has to be returned in [kmol/me/s]
-% ------------------------------------------------------------------------%
+%% User defined reaction rate function
+%  The reaction rates has to be returned in [kmol/me/s]
 
 % Example: irreversible, second order reaction
 % ------------------------------------------------------------------------%
 % A + B -> 2C
 % r = k1*CA*CB
 % ------------------------------------------------------------------------%
+CA0 = 1;        % Initial concentration [kmol/m3/s]
 k1  = 1;        % kinetic constant [m3/kmol/s]
 eps = 0;        % changes of moles
 tetaB0 = 2;     % relative amount of initial B
@@ -70,39 +65,31 @@ RA = @(x) -k1* ( CA0*(1-x)./(1+eps*x) ) .* ( CA0*(tetaB0-x)./(1+eps*x) )  ;
 % A <-> B
 % r = k1*CA+k1/KC*CB
 % ------------------------------------------------------------------------%
-%k1  = 1;       % kinetic constant [1/s]
-%KC = 10;       % equilibrium constant
-%tetaB0 = 0;    % relative amount of initial B
-%RA = @(x) -k1*CA0./(1+eps*x).*(1-x-(tetaB0+x)/KC);
+% CA0 = 1;        % Initial concentration [kmol/m3/s]
+% k1  = 1;       % kinetic constant [1/s]
+% KC = 10;       % equilibrium constant
+% tetaB0 = 0;    % relative amount of initial B
+% RA = @(x) -k1*CA0./(1+eps*x).*(1-x-(tetaB0+x)/KC);
 
 
-% ------------------------------------------------------------------------%
-% Design equations for ideal reactors (functions to be integrated)
-% ------------------------------------------------------------------------%
+%% Design equations for ideal reactors (functions to be integrated)
 integral_PFR  = @(x) CA0./(-RA(x));
 integral_CSTR = @(x) CA0.*x/(-RA(x));
 
 
-% ------------------------------------------------------------------------%
-% Create plots
-% ------------------------------------------------------------------------%
-figure;     % create new figure
-np=500;     % number of points (only for post-processing)
-X = linspace(0,0.999,np);   % create the x axis for plotting profiles
-
-% ------------------------------------------------------------------------%
-% Integrate design equations
-% ------------------------------------------------------------------------%
-for i=1:np
-TauPFR(i) = integral(@(x)integral_PFR(x),0,X(i));
-TauCSTR(i) = integral_CSTR(X(i));
+%% Calculations
+X = linspace(0,0.999,200);   % create the x axis for plotting profiles
+for i=1:length(X)
+    TauPFR(i) = integral(@(x)integral_PFR(x),0,X(i));
+    TauCSTR(i) = integral_CSTR(X(i));
 end
 
-% ------------------------------------------------------------------------%
+
+%% Graphical output
+
 % Clean data for best graphical results
-% ------------------------------------------------------------------------%
-np_extreme = np;
-for i=np:-1:2
+np_extreme = length(X);
+for i=length(X):-1:2
     if (TauPFR(i)<=0)
         if (i<np_extreme)   
             np_extreme = i;
@@ -117,24 +104,18 @@ for i=np:-1:2
     end
 end
 
-% ------------------------------------------------------------------------%
 % Plot
-% ------------------------------------------------------------------------%
+figure;                     % create new figure
+
 subplot(1,2,1);
 loglog( 1-X(1:np_extreme),TauPFR(1:np_extreme), '.', ...
         1-X(1:np_extreme),TauCSTR(1:np_extreme), '.');
-title('PFR vs CSTR');
-%xlim([0.001 1]);
+title('PFR vs CSTR');   legend('Plug Flow', 'CSTR');
 ylim([0.1 1000]);
-xlabel('1-X');
-ylabel('residence time [ut]');
-legend('Plug Flow', 'CSTR');
+xlabel('1-X');  ylabel('residence time [ut]');
 
-%Plot
 subplot(1,2,2);
 loglog(1-X(1:np_extreme),TauCSTR(1:np_extreme)./TauPFR(1:np_extreme), '.');
 title('PFR vs CSTR');
-%xlim([0.001 1]);
 ylim([0.1 1000]);
-xlabel('1-X');
-ylabel('TauCSTR/TauPFR');
+xlabel('1-X');  ylabel('TauCSTR/TauPFR');
