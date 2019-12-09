@@ -106,7 +106,7 @@ title('Concentrations at SS conditions');
 %% Part 3: solve the system as an unsteady CSTR
 % the function is the same, but you have to write it 
 % as a function of time
-tf = 1; % assume the final time as 1 minute
+tf = 12; % assume the final time as 12 minutes
 [t,T_unsteady] = ode15s(@heat_balance_unsteady,[0 tf],[T0]);
 
 figure; grid on;
@@ -116,7 +116,7 @@ xlabel('time [min]'); ylabel('T [K]');
 
 % Consider the fluctuation of T0 in time
 [t_T0var,T_T0var] = ode15s(@heat_balance_unsteady_T0var,[0 tf],T0);
-T0var = 283 + 20.*((0.5<t_T0var).*(t_T0var<0.55));
+T0var = 283 + 70.*((5<t_T0var).*(t_T0var<6));
 
 figure; grid on;
 plot(t_T0var,T_T0var,t_T0var,T0var,'LineWidth',2)
@@ -159,7 +159,7 @@ end
 
 
 %% Unsteady balance equation
-function dQ = heat_balance_unsteady(t,T)
+function dT = heat_balance_unsteady(t,T)
 
     global A1 A2;
     global E1 E2;
@@ -186,13 +186,13 @@ function dQ = heat_balance_unsteady(t,T)
     R = -Cp.*(T0-T)-U.*A.*(Text-T)./FA0;    % [J/mol]
 
     % Output function to be set to 0
-    dQ = G-R;
+    dT = (G-R)./Cp;
     
 end
 
 
 %% Unsteady balance equation with disturbance
-function dQ = heat_balance_unsteady_T0var(t,T)
+function dT = heat_balance_unsteady_T0var(t,T)
 
     global A1 A2;
     global E1 E2;
@@ -202,7 +202,7 @@ function dQ = heat_balance_unsteady_T0var(t,T)
     global U A Text;
 
     % Disturbance
-    T0 = 283 + 20.*((0.5<t).*(t<0.55));
+    T0 = 283 + 70.*((5<t).*(t<6));
 
     % Updating the kinetic constants
     k1 = A1.*exp(-E1./1.987./T);    % [l/min]
@@ -222,6 +222,6 @@ function dQ = heat_balance_unsteady_T0var(t,T)
     R = -Cp.*(T0-T)-U.*A.*(Text-T)./FA0;    % [J/mol]
 
     % Output function to be set to 0
-    dQ = G-R;
+    dT = (G-R)./Cp;
     
 end
