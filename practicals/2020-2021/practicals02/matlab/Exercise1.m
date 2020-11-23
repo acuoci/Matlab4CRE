@@ -78,7 +78,7 @@ FAin = FtotIn*xAin;    % [kmol/h]
 Y0 = [0 Tin]';
 opt_ode = odeset('RelTol',1e-7,'AbsTol',1e-12);
 [V, Y] = ode15s(@adiabaticPFR, [0 2.5], Y0, opt_ode, ...
-                kfRef,Tfref,E,KeqRef,TeqRef,DCp,DHStar,DHin,CAin,FAin,Cpin);
+                kfRef,Tfref,E,KeqRef,TeqRef,DCp,DHStar,DH0,T0,CAin,FAin,Cpin);
 
 % Post processing
 X = Y(:,1);                % [kmol/m3]
@@ -112,7 +112,7 @@ title('Temperature vs Conversion');
 
 
 %% ODE system (defined locally, requires at least MATLAB-2016b)
-function dY = adiabaticPFR(V,Y, kfRef,Tfref,E,KeqRef,TeqRef,DCp,DHStar,DHin,CAin,FAin,Cpin)
+function dY = adiabaticPFR(V,Y, kfRef,Tfref,E,KeqRef,TeqRef,DCp,DHStar,DH0,T0,CAin,FAin,Cpin)
     
     % Recover variables
     X = Y(1);      % [-]
@@ -123,7 +123,8 @@ function dY = adiabaticPFR(V,Y, kfRef,Tfref,E,KeqRef,TeqRef,DCp,DHStar,DHin,CAin
     kEq = KeqRef*exp(-(DHStar/8.314-DCp/8.314*TeqRef)*(1/T-1/TeqRef) + ...
           DCp/8.314*log(T/TeqRef));
     r  = kf*CAin*(1-(1+1/kEq)*X);               % [kmol/m3/h]
-    Qr = -r*DHin;                               % [J/h/m3]
+	DH = DH0+DCp*(T-T0);						% [J/kmol]
+    Qr = -r*DH;                                 % [J/h/m3]
 
     % Equations
     dX = r/FAin;                 % [1/m3]
