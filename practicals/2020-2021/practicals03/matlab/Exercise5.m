@@ -46,7 +46,7 @@ close all; clear variables;
 global A;       % [1/s]
 global Ea;      % [cal/mol]
 global S;       % [m2]
-global U;       % [cal/m2/h/K]
+global U;       % [kcal/m2/h/K]
 global D;       % [m]
 global deltaHR; % [cal/mol]
 global Cp;      % [cal/mol/K]
@@ -171,7 +171,7 @@ function dY = PFR(z,Y)
     global A;       % [1/s]
     global Ea;      % [cal/mol]
     global S;       % [m2]
-    global U;       % [cal/m2/h/K]
+    global U;       % [kcal/m2/h/K]
     global D;       % [m]
     global deltaHR; % [cal/mol]
     global Cp;      % [cal/mol/K]
@@ -200,10 +200,14 @@ function dY = PFR(z,Y)
     Re = rho*v*D/mu;                % [-]
     f = 0.079/Re^0.25;              % [-]
     
+    % Mass balance equations
     dFA = -S*r;                                     % [kmol/m/h]
     dFB =  S*r;                                     % [kmol/m/h]
-    dT  = -S*( U*(T-Te)*4/D + r*deltaHR)/(Ftot*Cp); % [K/m]
-    dTe = -Se*( U*(T-Te)*4/D )/(Fe*Cpe);            % [K/m]
+
+    % Energy balance equation (kcal converted to cal, mol converted to kmol)
+    dT  = -S*( (1000*U)*(T-Te)*4/D + r*(1000.*deltaHR)) / ....
+                         (Ftot*(1000.*Cp));               % [K/m]
+    dTe =  Se*( (1000.*U)*(T-Te)*4/D )/(Fe*(1000.*Cpe));  % [K/m]
                           
     
     % Pressure equation
@@ -212,7 +216,7 @@ function dY = PFR(z,Y)
     dP  = -4/D*0.5*rho*v^2*f;                                   % [Pa/m]
     
     % Version 2: kinetic energy term accounted for
-    dP = (-4/D*0.5*rho*v^2*f - rho*v^2/T*dT)/(1-rho*v^2/P);     % [Pa/m]
+    %dP = (-4/D*0.5*rho*v^2*f - rho*v^2/T*dT)/(1-rho*v^2/P);     % [Pa/m]
 
     dY = [dFA dFB dT dTe dP]';
 

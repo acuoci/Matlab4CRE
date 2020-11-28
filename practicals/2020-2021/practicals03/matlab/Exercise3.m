@@ -47,7 +47,7 @@ global A;       % [1/s]
 global Ea;      % [cal/mol]
 global P;       % [Pa]
 global S;       % [m2]
-global U;       % [cal/m2/h/K]
+global U;       % [kcal/m2/h/K]
 global D;       % [m]
 global deltaHR; % [cal/mol]
 global Cp;      % [cal/mol/K]
@@ -152,7 +152,7 @@ function dY = PFR(z,Y)
     global Ea;      % [cal/mol]
     global P;       % [Pa]
     global S;       % [m2]
-    global U;       % [cal/m2/h/K]
+    global U;       % [kcal/m2/h/K]
     global D;       % [m]
     global deltaHR; % [cal/mol]
     global Cp;      % [cal/mol/K]
@@ -172,10 +172,14 @@ function dY = PFR(z,Y)
     CA = Ctot*FA/Ftot;              % [kmol/m3]
     r = k*CA;                       % [kmol/m3/h]
     
+    % Mass balance equations
     dFA = -S*r;                                     % [kmol/m/h]
     dFB =  S*r;                                     % [kmol/m/h]
-    dT  = -S*( U*(T-Te)*4/D + r*deltaHR)/(Ftot*Cp); % [K/h]
-    dTe = -Se*( U*(T-Te)*4/D )/(Fe*Cpe);            % [K/h]
+    
+    % Energy balance equation (kcal converted to cal, mol converted to kmol)
+    dT  = -S*( (1000*U)*(T-Te)*4/D + r*(1000.*deltaHR)) / ....
+                         (Ftot*(1000.*Cp));               % [K/m]
+    dTe = -Se*( (1000.*U)*(T-Te)*4/D )/(Fe*(1000.*Cpe));  % [K/m]
 
     dY = [dFA dFB dT dTe]';
 
